@@ -15,8 +15,8 @@ class WindowManager: ObservableObject {
     
     @Published var isCompactMode: Bool = false
     
-    private let fullSize = NSSize(width: 800, height: 600)
-    private let compactSize = NSSize(width: 320, height: 200)
+    private let fullSize = NSSize(width: 400, height: 400)
+    private let compactSize = NSSize(width: 240, height: 230)
     
     private init() {}
     
@@ -33,15 +33,24 @@ class WindowManager: ObservableObject {
         let newOriginY = currentFrame.origin.y + (currentFrame.height - targetSize.height) / 2
         
         let newFrame = NSRect(
-            x: newOriginX,
-            y: newOriginY,
+            x: max(0, newOriginX), // Не даем окну уйти за край экрана
+            y: max(0, newOriginY),
             width: targetSize.width,
             height: targetSize.height
         )
         
+        // Устанавливаем ограничения размера окна в зависимости от режима
+        if isCompactMode {
+            window.minSize = NSSize(width: 300, height: 180)
+            window.maxSize = NSSize(width: 400, height: 250)
+        } else {
+            window.minSize = NSSize(width: 600, height: 400)
+            window.maxSize = NSSize(width: 1200, height: 800)
+        }
+        
         // Анимированное изменение размера
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.3
+            context.duration = 0.4
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
             window.animator().setFrame(newFrame, display: true)
         })

@@ -32,6 +32,7 @@ struct TimerDetailView: View {
                 Spacer()
             }
             .padding(.horizontal)
+            .background(Color(.gray.opacity(0.1)))
             
             Spacer()
             
@@ -74,10 +75,7 @@ struct TimerDetailView: View {
             
             Spacer()
             
-            // Статистика (если нужна)
-            if timer.elapsedTime > 0 {
-                statisticsView
-            }
+            
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(NSColor.textBackgroundColor))
@@ -131,4 +129,8 @@ struct TimerDetailView: View {
                 .fontWeight(.medium)
         }
     }
+}
+
+#Preview {
+    ContentView()
 }

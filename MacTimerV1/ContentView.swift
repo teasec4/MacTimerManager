@@ -76,14 +76,152 @@ struct ContentView: View {
         .sheet(isPresented:$showingSettings){
             SettingsView(isPresented:$showingSettings)
         }
+        .onChange(of: windowManager.isCompactMode) { newValue in
+            // Автоматически выбираем первый запущенный таймер или первый в списке
+            if newValue && selectedTimer == nil && !timerManager.timers.isEmpty {
+                selectedTimer = sortedTimers.first(where: { $0.isRunning }) ?? sortedTimers.first
+            }
+        }
     }
     
     // MARK: - Full Mode View
     @ViewBuilder
     private var fullModeView: some View {
-        NavigationSplitView{
-            sidebarContent
-        } detail: {
+        HStack(spacing: 0) {
+            // Sidebar
+            VStack(spacing: 0) {
+                // Заголовок сайдбара
+//                HStack {
+//                    Text("Timers")
+//                        .font(.title2)
+//                        .fontWeight(.bold)
+//                    
+//                    Spacer()
+//                    
+//                    // Кнопка компактного режима (сделаем её более заметной)
+//                    Button {
+//                        windowManager.setCompactMode(true)
+//                    } label: {
+//                        HStack(spacing: 4) {
+//                            Image(systemName: "rectangle.compress.vertical")
+//                                .font(.system(size: 14))
+//                            Text("Compact")
+//                                .font(.caption)
+//                        }
+//                        .padding(.horizontal, 8)
+//                        .padding(.vertical, 4)
+//                        .background(Color.accentColor.opacity(0.1))
+//                        .cornerRadius(6)
+//                    }
+//                    .buttonStyle(.plain)
+//                    .help("Switch to Compact Mode")
+//                }
+//                .padding(.horizontal, 16)
+//                .padding(.vertical, 12)
+//                .background(Color(NSColor.controlBackgroundColor))
+//                
+//                Divider()
+                
+                // Тулбар сортировки
+                HStack {
+                    Menu{
+                        ForEach(SortOption.allCases, id:\.self){option in
+                            Button{
+                                sortOption = option
+                            } label: {
+                                HStack{
+                                    Image(systemName:option.icon)
+                                    Text(option.rawValue)
+                                    if sortOption == option{
+                                        Image(systemName:"checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: sortOption.icon)
+                            Text(sortOption.rawValue)
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                        }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Spacer()
+                    
+                    // Дополнительная кнопка компактного режима в тулбаре
+                    
+                    
+                    // Быстрые действия
+                    HStack(spacing: 8) {
+                        Button{
+                            showingAddTimer = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 14))
+                        }
+                        .buttonStyle(.plain)
+                        
+                        Button {
+                            windowManager.setCompactMode(true)
+                        } label: {
+                            Image(systemName: "arrow.down.right.and.arrow.up.left")
+                                .font(.system(size: 12))
+                        }
+                        .buttonStyle(.plain)
+                        .help("Compact Mode")
+                        
+                        
+                        Button{
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gear")
+                                .font(.system(size: 14))
+                        }
+                        .buttonStyle(.plain)
+                        
+                        
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color(NSColor.controlBackgroundColor))
+                
+                Divider()
+                
+                // Список таймеров
+                ScrollView {
+                    LazyVStack(spacing: 2) {
+                        ForEach(sortedTimers) { timer in
+                            TimerListRowView(timer: timer, timerManager: timerManager)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(selectedTimer?.id == timer.id ?
+                                            Color.accentColor.opacity(0.15) :
+                                            Color.clear)
+                                )
+                                .contentShape(Rectangle()) // Делает всю область кликабельной
+                                .onTapGesture {
+                                    selectedTimer = timer
+                                }
+                                .animation(.easeInOut(duration: 0.2), value: selectedTimer?.id)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+                .background(Color(NSColor.textBackgroundColor))
+            }
+            .frame(width: 180)
+            .background(Color(NSColor.controlBackgroundColor))
+            
+            Divider()
+            
+            // Detail View
             detailContent
         }
     }
@@ -110,15 +248,12 @@ struct ContentView: View {
                 if !timerManager.timers.isEmpty {
                     Picker("Timer", selection: $selectedTimer) {
                         ForEach(sortedTimers) { timer in
-                            HStack {
-                                Text(timer.icon)
-                                Text(timer.name)
-                            }
+                            Text("\(timer.icon) \(timer.name)")
                             .tag(timer as TimerModel?)
                         }
                     }
                     .pickerStyle(.menu)
-                    .frame(maxWidth: 150)
+                    .frame(maxWidth: 160)
                 }
                 
                 Spacer()
@@ -175,59 +310,8 @@ struct ContentView: View {
     
     @ViewBuilder
     private var sidebarContent: some View {
-        List(selection:$selectedTimer){
-            ForEach(sortedTimers) {timer in
-                TimerListRowView(timer:timer, timerManager: timerManager)
-                    .tag(timer)
-            }
-        }
-        .navigationTitle("Timers")
-        .toolbar{
-            ToolbarItemGroup(placement: .primaryAction){
-                // Кнопка компактного режима
-                Button {
-                    windowManager.setCompactMode(true)
-                } label: {
-                    Image(systemName: "sidebar.left.badge.minus")
-                }
-                .help("Compact Mode")
-                
-                Menu{
-                    ForEach(SortOption.allCases, id:\.self){option in
-                        Button{
-                            sortOption = option
-                        } label: {
-                            HStack{
-                                Image(systemName:option.icon)
-                                Text(option.rawValue)
-                                if sortOption == option{
-                                    Image(systemName:"checkmark")
-                                }
-                            }
-                        }
-                    }
-                } label: {
-                    Image(systemName: "arrow.up.arrow.down")
-                } primaryAction: {
-                    sortOption = sortOption == .name ? .timeElapsed : .name
-                }
-                
-                // Settings
-                Button{
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gear")
-                }
-                
-                // Add a new timer
-                Button{
-                    showingAddTimer = true
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
-        }
-        .frame(minWidth: 200)
+        // Этот код больше не используется, но оставляем для совместимости
+        EmptyView()
     }
     
     
@@ -270,31 +354,31 @@ struct CompactTimerView: View {
     var body: some View {
         VStack(spacing: 12) {
             // Заголовок с иконкой и именем
-            HStack(spacing: 8) {
-                Text(timer.icon)
-                    .font(.title2)
-                
-                Text(timer.name)
-                    .font(.headline)
-                    .lineLimit(1)
-                
-                Spacer()
-                
-                // Статус индикатор
-                if timer.isRunning {
-                    Circle()
-                        .fill(Color.green)
-                        .frame(width: 8, height: 8)
-                } else if timer.isPaused {
-                    Circle()
-                        .fill(Color.orange)
-                        .frame(width: 8, height: 8)
-                }
-            }
-            
+//            HStack(spacing: 8) {
+//                Text(timer.icon)
+//                    .font(.title2)
+//                
+//                Text(timer.name)
+//                    .font(.headline)
+//                    .lineLimit(1)
+//                
+//                Spacer()
+//                
+//                // Статус индикатор
+//                if timer.isRunning {
+//                    Circle()
+//                        .fill(Color.green)
+//                        .frame(width: 8, height: 8)
+//                } else if timer.isPaused {
+//                    Circle()
+//                        .fill(Color.orange)
+//                        .frame(width: 8, height: 8)
+//                }
+//            }
+            Spacer()
             // Большое время
             Text(timer.formattedTime)
-                .font(.system(size: 36, weight: .thin, design: .monospaced))
+                .font(.system(size: 42, weight: .thin, design: .monospaced))
                 .foregroundColor(timer.isRunning ? .blue : .primary)
                 .monospacedDigit()
             
@@ -334,8 +418,15 @@ struct CompactTimerView: View {
                 .disabled(timer.elapsedTime <= 0)
                 .opacity(timer.elapsedTime > 0 ? 1 : 0.3)
             }
+            Spacer()
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+}
+
+
+
+#Preview {
+    ContentView()
 }
