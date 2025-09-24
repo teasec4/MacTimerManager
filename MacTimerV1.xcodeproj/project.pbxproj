@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		953FBF252E83B0CD00920336 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 953FBF242E83B0C000920336 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		953FBF242E83B0C000920336 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = README.md; sourceTree = "<group>"; };
 		95ACED4B2E44961B00808295 /* MacTimerV1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacTimerV1.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		95ACED422E44961B00808295 = {
 			isa = PBXGroup;
 			children = (
+				953FBF242E83B0C000920336 /* README.md */,
 				95ACED4D2E44961B00808295 /* MacTimerV1 */,
 				95ACED4C2E44961B00808295 /* Products */,
 			);
@@ -119,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				953FBF252E83B0CD00920336 /* README.md in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
