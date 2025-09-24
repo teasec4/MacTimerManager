@@ -1,11 +1,3 @@
-//
-//  SettingsView.swift
-//  MacTimerV1
-//
-//  Created by Максим Ковалев on 8/8/25.
-//
-
-import Foundation
 import SwiftUI
 
 struct SettingsView: View {
@@ -14,17 +6,20 @@ struct SettingsView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Settings")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            Text("Settings will be implemented here")
+                .font(.title)
+            Text("Здесь будут настройки приложения")
                 .foregroundColor(.secondary)
             
             Button("Close") {
                 isPresented = false
             }
+            .keyboardShortcut(.escape)
         }
-        .padding(40)
+        .padding()
         .frame(width: 300, height: 200)
     }
+}
+
+#Preview {
+    SettingsView(isPresented: .constant(true))
 }
